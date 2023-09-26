@@ -14,6 +14,7 @@
         <div class="py-5" v-show="!isLoading">
             <div class="mb-3">
                 <button class="bg-blue-600 text-white px-5 py-2 rounded-md ml-2 hover:bg-blue-400" @click="addTaskModal">Create Task</button>
+                <button class="bg-blue-600 text-white px-5 py-2 rounded-md ml-2 hover:bg-blue-400" @click="isFilterModalVisible = true">Filter/Sort</button>
             </div>
             <div class="flex flex-col gap-2" v-if="tasks.length">
                 <div class="max-md:flex-col flex gap-2 bg-blue-100 p-2 rounded-xl" v-for="(val, idx) in tasks" :key="val.id">
@@ -28,8 +29,7 @@
 
                         <span class="max-md:col-span-2 p-1">Priority Level: {{ val.priority_level ? priorityLevelOptions[val.priority_level].label : 'None' }} </span>
                         <span class="p-1 col-span-2">Tags:
-                            <span class="bg-blue-600 p-1 mr-1 rounded-md text-white" v-for="(tag2, idx2) in val.tags" :key="idx2">{{ tag2 }}</span>
-                            <span v-if="val.tags == null">{{ 'None' }}</span>
+                            <span class="bg-blue-600 p-1 mr-1 rounded-md text-white" v-for="(tagVal, tagIdx) in val.tags" :key="tagIdx">{{ tagVal }}</span>
                         </span>
                         <!-- <span class="pl-3">{{ val.file_attachments }} </span> -->
                     </div>
@@ -51,7 +51,7 @@
     </div>
 
     <!-- Modal for Create and Edit Task -->
-    <Modal v-show="isModalVisible" @close="isModalVisible = false">
+    <Modal v-show="isTaskModalVisible" @close="isTaskModalVisible = false">
         <!-- header -->
         <template v-slot:header>
             <h1 class="font-bold text-xl">{{ modalTitle }}</h1>
@@ -111,7 +111,95 @@
             <button type="button" class="rounded-md bg-red-600 hover:bg-red-400 p-2 text-white" @click="deleteTask(val, idx)" v-if="taskId > 0">
                 Delete
             </button>
-            <button type="button" class="rounded-md bg-slate-600 hover:bg-slate-400 p-2 text-white" @click="isModalVisible = false">
+            <button type="button" class="rounded-md bg-slate-600 hover:bg-slate-400 p-2 text-white" @click="isTaskModalVisible = false">
+                Cancel
+            </button>
+        </template>
+    </Modal>
+
+    <!-- Modal for Filter and Sorting -->
+    <Modal v-show="isFilterModalVisible" @close="isFilterModalVisible = false">
+        <!-- header -->
+        <template v-slot:header>
+            <h1 class="font-bold text-xl">Filter/Sort</h1>
+        </template>
+
+        <!-- body -->
+        <template v-slot:body>
+            <div class="mb-4">
+                <label class="block text-grey-darker text-sm font-bold mb-2" for="title">
+                    Title
+                </label>
+                <input v-model="filterTitle" type="text" id="title" placeholder="Title" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
+                <span class="text-red-500" v-if="filterErrors.title">{{ filterErrors.title[0] }}</span>
+            </div>
+            <div class="mb-4">
+                <label class="block text-grey-darker text-sm font-bold mb-2" for="description">
+                    Description
+                </label>
+                <input v-model="filterDescription" type="text" id="description" placeholder="Description" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
+                <span class="text-red-500" v-if="filterErrors.description">{{ filterErrors.description[0] }}</span>
+            </div>
+            <div class="mb-4">
+                <label class="block text-grey-darker text-sm font-bold mb-2" for="priorityLevel">
+                    Task Priority
+                </label>
+                <Multiselect v-model="filterPriorityLevel" :options="priorityLevelOptions" id="priorityLevel" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
+                <span class="text-red-500" v-if="filterErrors.task_priority">{{ filterErrors.task_priority[0] }}</span>
+            </div>
+            <div class="mb-4">
+                <label class="block text-grey-darker text-sm font-bold mb-2" for="dueDateFrom">
+                    Due Date From
+                </label>
+                <input v-model="filterDueDateFrom" type="date" id="dueDateFrom" placeholder="Due Date From" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
+                <span class="text-red-500" v-if="filterErrors.due_date_from">{{ filterErrors.due_date_from[0] }}</span>
+            </div>
+            <div class="mb-4">
+                <label class="block text-grey-darker text-sm font-bold mb-2" for="dueDateTo">
+                    Due Date To
+                </label>
+                <input v-model="filterDueDateTo" type="date" id="dueDateTo" placeholder="Due Date To" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
+                <span class="text-red-500" v-if="filterErrors.due_date_to">{{ filterErrors.due_date_to[0] }}</span>
+            </div>
+            <div class="mb-4">
+                <label class="block text-grey-darker text-sm font-bold mb-2" for="dueDateFrom">
+                    Completed Date From
+                </label>
+                <input v-model="filterCompletedDateFrom" type="date" id="dueDateFrom" placeholder="Due Date From" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
+                <span class="text-red-500" v-if="filterErrors.due_date_from">{{ filterErrors.due_date_from[0] }}</span>
+            </div>
+            <div class="mb-4">
+                <label class="block text-grey-darker text-sm font-bold mb-2" for="dueDateTo">
+                    Completed Date To
+                </label>
+                <input v-model="filterCompletedDateTo" type="date" id="dueDateTo" placeholder="Due Date To" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
+                <span class="text-red-500" v-if="filterErrors.due_date_to">{{ filterErrors.due_date_to[0] }}</span>
+            </div>
+            <div class="mb-4">
+                <label class="block text-grey-darker text-sm font-bold mb-2" for="dueDateFrom">
+                    Archived Date From
+                </label>
+                <input v-model="filterArchivedDateFrom" type="date" id="dueDateFrom" placeholder="Due Date From" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
+                <span class="text-red-500" v-if="filterErrors.due_date_from">{{ filterErrors.due_date_from[0] }}</span>
+            </div>
+            <div class="mb-4">
+                <label class="block text-grey-darker text-sm font-bold mb-2" for="dueDateTo">
+                    Archived Date To
+                </label>
+                <input v-model="filterArchivedDateTo" type="date" id="dueDateTo" placeholder="Due Date To" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
+                <span class="text-red-500" v-if="filterErrors.due_date_to">{{ filterErrors.due_date_to[0] }}</span>
+            </div>
+        </template>
+
+        <!-- footer -->
+        <template v-slot:footer>
+            <button type="button" class="rounded-md bg-blue-600 hover:bg-blue-400 p-2 text-white" @click="loadTasksWithParams">
+                Save
+            </button>
+            <button type="button" class="rounded-md bg-red-600 hover:bg-red-400 p-2 text-white" @click="clearFilters">
+                Clear
+            </button>
+            <button type="button" class="rounded-md bg-slate-600 hover:bg-slate-400 p-2 text-white" @click="isFilterModalVisible = false">
                 Cancel
             </button>
         </template>
@@ -138,8 +226,8 @@ export default {
         const user = ref()
         const isLoading = ref()
 
-        // Add Task modal
-        const isModalVisible = ref(false)
+        // Task modal variables
+        const isTaskModalVisible = ref(false)
         const modalTitle = ref('Create Task')
         const taskId = ref(0)  // Required
         const title = ref('')  // Required
@@ -169,6 +257,19 @@ export default {
         ])
         const tagOptions = reactive(['In-progress', 'On-hold', 'Blocked'])
 
+        // Filter modal variables
+        const isFilterModalVisible = ref(false)
+        const filterTitle = ref('')
+        const filterDescription = ref('')
+        const filterPriorityLevel = ref(null)
+        const filterDueDateFrom = ref('')
+        const filterDueDateTo = ref('')
+        const filterCompletedDateFrom = ref('')
+        const filterCompletedDateTo = ref('')
+        const filterArchivedDateFrom = ref('')
+        const filterArchivedDateTo = ref('')
+        const filterErrors = ref({})
+
         let router = useRouter()
 
         onMounted(() => {
@@ -189,12 +290,26 @@ export default {
             }
         }
 
+        const handleLogout = () => {
+            localStorage.removeItem('APP_USER_TOKEN')
+            router.push('/')
+        }
+
+        // Task functions
         const loadTasks = async () => {
+            isLoading.value = true
+
             try {
                 const req = await request('get', '/api/tasks')
                 tasks.value = req.data.tasks
             } catch (e) {
-                await router.push('/')
+                if (e.response.data && e.response.data.message) {
+                    notify({
+                        group: "error",
+                        title: "Fail",
+                        text: e.response.data.message
+                    }, 4000)
+                }
             }
 
             isLoading.value = false
@@ -229,7 +344,7 @@ export default {
 
                 if (req.data.message) {
                     isLoading.value = false
-                    isModalVisible.value = false
+                    isTaskModalVisible.value = false
 
                     notify({
                         group: "generic",
@@ -278,7 +393,7 @@ export default {
 
                 if (req.data.message) {
                     isLoading.value = false
-                    isModalVisible.value = false
+                    isTaskModalVisible.value = false
 
                     notify({
                         group: "generic",
@@ -303,11 +418,6 @@ export default {
             }
 
             isLoading.value = false
-        }
-
-        const handleLogout = () => {
-            localStorage.removeItem('APP_USER_TOKEN')
-            router.push('/')
         }
 
         const deleteTask = async (val, index) => {
@@ -335,7 +445,7 @@ export default {
 
         const addTaskModal = () => {
             modalTitle.value = 'Create Task'
-            isModalVisible.value = true
+            isTaskModalVisible.value = true
 
             taskId.value = 0
             title.value = ''
@@ -347,7 +457,7 @@ export default {
 
         const editTaskModal = (val, idx) => {
             modalTitle.value = 'Edit Task'
-            isModalVisible.value = true
+            isTaskModalVisible.value = true
 
             taskId.value = val.id
             title.value = val.title
@@ -363,7 +473,7 @@ export default {
                 isLoading.value = true
 
                 let data = {}
-                    data[field] = !val[field]
+                data[field] = !val[field]
 
                 const req = await request('put', `/api/tasks/${val.id}`, data)
 
@@ -391,6 +501,54 @@ export default {
             }
         }
 
+        // Filter functions
+        const loadTasksWithParams = async (val, index, field) => {
+            isLoading.value = true
+
+            try {
+                let data = {
+                    title: filterTitle.value,
+                    description: filterDescription.value,
+                    priority_level: filterPriorityLevel.value,
+                    due_date_from: filterDueDateFrom.value,
+                    due_date_to: filterDueDateTo.value,
+                    completed_date_from: filterCompletedDateFrom.value,
+                    completed_date_to: filterCompletedDateTo.value,
+                    archived_date_from: filterArchivedDateFrom.value,
+                    archived_date_to: filterArchivedDateTo.value,
+                }
+
+                const req = await request('get', '/api/tasks', { params: data })
+                tasks.value = req.data.tasks
+            } catch (e) {
+                if (e.response.data && e.response.data.errors) {
+                    filterErrors.value = e.response.data.errors
+                }
+
+                if (e.response.data && e.response.data.message) {
+                    notify({
+                        group: "error",
+                        title: "Fail",
+                        text: e.response.data.message
+                    }, 4000)
+                }
+            }
+
+            isLoading.value = false
+        }
+
+        const clearFilters = () => {
+            filterTitle.value = ''
+            filterDescription.value = ''
+            filterPriorityLevel.value = ''
+            filterDueDateFrom.value = ''
+            filterDueDateTo.value = ''
+            filterCompletedDateFrom.value = ''
+            filterCompletedDateTo.value = ''
+            filterArchivedDateFrom.value = ''
+            filterArchivedDateTo.value = ''
+        }
+
         return {
             task,
             tasks,
@@ -400,8 +558,8 @@ export default {
             handleLogout,
             toggleTaskField,
 
-            // Modal variables
-            isModalVisible,
+            // Task modal variables
+            isTaskModalVisible,
             modalTitle,
             taskId,
             title,
@@ -413,10 +571,26 @@ export default {
             priorityLevelOptions,
             tagOptions,
             errors,
-            // Modal functions
+            // Task modal functions
             addTaskModal,
             editTaskModal,
             processTask,
+
+            // Filter modal variables
+            isFilterModalVisible,
+            filterTitle,
+            filterDescription,
+            filterPriorityLevel,
+            filterDueDateFrom,
+            filterDueDateTo,
+            filterCompletedDateFrom,
+            filterCompletedDateTo,
+            filterArchivedDateFrom,
+            filterArchivedDateTo,
+            filterErrors,
+            // Filter modal functions
+            loadTasksWithParams,
+            clearFilters,
         }
     },
 }
@@ -424,7 +598,7 @@ export default {
 
 <style src="@vueform/multiselect/themes/default.css"></style>
 <style>
-    .multiselect-wrapper {
-        min-height: auto !important;
-    }
+.multiselect-wrapper {
+    min-height: auto !important;
+}
 </style>

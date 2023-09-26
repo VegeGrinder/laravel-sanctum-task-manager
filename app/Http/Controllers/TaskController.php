@@ -15,7 +15,7 @@ class TaskController extends Controller
     public function index()
     {
         $user = Auth()->user();
-        $tasks = Task::where('user_id', $user->id)->get();
+        $tasks = Task::where('user_id', $user->id)->filter()->get();
 
         return response()->json(['tasks' => $tasks]);
     }
@@ -64,8 +64,9 @@ class TaskController extends Controller
      */
     public function show(string $id)
     {
-        $response = Task::findOrFail($id);
-        return response()->json($response, 200);
+        $task = Task::findOrFail($id);
+
+        return response()->json($task, 200);
     }
 
     /**

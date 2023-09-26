@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const request = async (method, url, data) => {
+export const request = async (method, url, data = null) => {
     const token = localStorage.getItem('APP_USER_TOKEN')
     if (token !== undefined || token !== "") {
         const headers = {
@@ -11,7 +11,7 @@ export const request = async (method, url, data) => {
         let response = null;
         switch (method) {
             case 'get':
-                response = await axios.get(url, headers)
+                response = await axios.get(url, data != null ? {...headers, ...data} : headers)
                 break;
             case 'post':
                 response = await axios.post(url, data, headers)

@@ -3,7 +3,7 @@
         <div id="modal" class="bg-purple-50 rounded-xl overflow-x-auto flex flex-col justify-between w-2/6 h-4/6">
 
             <!-- Modal Header -->
-            <header id="modal-header" class="px-4 py-4 flex justify-between items-center border-b-2 border-white">
+            <header id="modal-header" class="px-4 py-4 flex justify-between items-center bg-blue-100">
                 <slot name="header">Modal Header</slot>
                 <button type="button" class="w-8 p-2 bg-gray-300 rounded-full text-xs" @click="close">&#10006;</button>
             </header>
