@@ -19,7 +19,10 @@
         "vue": "^3.2.37"
     },
     "dependencies": {
+        "@vueform/multiselect": "^2.6.2",
         "lodash": "^4.17.21",
+        "mini-svg-data-uri": "^1.4.4",
+        "notiwind": "^2.0.2",
         "vue-router": "^4.2.5",
         "vuex": "^4.1.0"
     }

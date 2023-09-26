@@ -18,6 +18,11 @@ const router = createRouter({
             path: '/home',
             component: () => import('./pages/Home.vue')
         },
+        {
+            name: 'tasks',
+            path: '/tasks',
+            component: () => import('./pages/Tasks.vue')
+        }
     ],
 })
 router.beforeEach((to, from, next) => {

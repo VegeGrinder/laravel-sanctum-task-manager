@@ -16,7 +16,7 @@
                     <label class="block text-grey-darker text-sm font-bold mb-2" for="password">
                         Password
                     </label>
-                    <input class="shadow appearance-none border border-red rounded w-full py-2 px-3 text-grey-darker" id="password" type="password" v-model="form.password" required />
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" id="password" type="password" v-model="form.password" required />
                     <span class="text-red-500" v-if="errors.password">{{ errors.password[0] }}</span>
                 </div>
                 <div class="flex items-center justify-between">

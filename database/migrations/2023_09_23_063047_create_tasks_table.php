@@ -14,13 +14,17 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id');
             $table->string('title');
+            $table->string('description');
             $table->json('tags')->nullable();
-            $table->unsignedTinyInteger('priority_level')->default(PriorityLevel::NORMAL);
+            $table->unsignedTinyInteger('priority_level')->nullable();
             $table->boolean('is_completed')->default(false);
             $table->boolean('is_archived')->default(false);
             $table->date('due_date')->nullable();
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users');
         });
     }
 
