@@ -141,11 +141,15 @@ class TaskController extends Controller
             if ($task == null)
                 return response()->json(['message' => 'Task not found'], 404);
 
-            if (isset($validated['is_completed']))
+            if (isset($validated['is_completed']) && $validated['is_completed'] == true)
                 $validated['completed_date'] = now();
+            else
+                $validated['completed_date'] = null;
 
-            if (isset($validated['is_archived']))
+            if (isset($validated['is_archived']) && $validated['is_archived'] == true)
                 $validated['archived_date'] = now();
+            else
+                $validated['archived_date'] = null;
 
             $task->update($validated);
 
