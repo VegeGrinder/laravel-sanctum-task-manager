@@ -18,7 +18,7 @@
             </div>
             <div class="flex flex-col gap-2" v-if="tasks.length">
                 <div class="max-md:flex-col flex gap-2 bg-blue-100 p-2 rounded-xl" v-for="(val, idx) in tasks" :key="val.id">
-                    <div class="text-gray-600 grid grid-rows-3 grid-cols-2 grow p-2 cursor-pointer" @click="editTaskModal(val, idx)">
+                    <div class="text-gray-600 grid grid-cols-2 grow p-2 cursor-pointer" @click="editTaskModal(val, idx)">
                         <span class="p-1 col-span-2"><b>Status</b>: {{ val.is_completed ? 'Complete' : 'To-do' }} {{ val.is_archived ? '(Archived)' : '' }}</span>
 
                         <span class="p-1 col-span-2"><b>Title</b>: {{ val.title }} </span>
@@ -50,12 +50,7 @@
         </div>
 
         <div class="text-center">
-            <TailwindPagination
-                :item-classes="['h-full', 'w-16']"
-                :active-classes="['bg-blue-100']"
-                :data="laravelData"
-                @pagination-change-page="loadTasksWithParams"
-            />
+            <TailwindPagination :item-classes="['h-full', 'w-16']" :active-classes="['bg-blue-100']" :data="laravelData" @pagination-change-page="loadTasksWithParams" />
         </div>
     </div>
 
