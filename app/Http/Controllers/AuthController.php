@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
+    /**
+     * User register
+     */
     public function register(Request $request): \Illuminate\Http\JsonResponse
     {
         try {
@@ -46,6 +49,9 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * User login
+     */
     public function login(Request $request): \Illuminate\Http\JsonResponse
     {
         try {
@@ -96,6 +102,9 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * User logout
+     */
     public function logout()
     {
         Auth::logout();

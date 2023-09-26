@@ -15,31 +15,48 @@ class TaskController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $validateSort = Validator::make(
-            request()->all(),
-            [
-                'sort_by' => 'required_with:sort_direction',
-                'sort_direction' => 'required_with:sort_by',
-            ]
-        );
+        try {
+            $validateSort = Validator::make(
+                $request->all(),
+                [
+                    'title' => 'sometimes|string',
+                    'description' => 'sometimes|string',
+                    'priority_level' => 'sometimes|integer',
+                    'due_date_from' => 'sometimes|date',
+                    'due_date_to' => 'sometimes|date',
+                    'completed_date_from' => 'sometimes|date',
+                    'completed_date_to' => 'sometimes|date',
+                    'archived_date_from' => 'sometimes|date',
+                    'archived_date_to' => 'sometimes|date',
+                    'created_date_from' => 'sometimes|date',
+                    'created_date_to' => 'sometimes|date',
+                    'sort_by' => 'sometimes|required_with:sort_direction|string',
+                    'sort_direction' => 'sometimes|required_with:sort_by|string',
+                ]
+            );
 
-        if ($validateSort->fails()) {
+            if ($validateSort->fails()) {
+                return response()->json([
+                    'message' => 'Please check your inputs.',
+                    'errors' => $validateSort->errors(),
+                ], 422);
+            }
+
+            $user = Auth()->user();
+            $tasks = Task::with('taskFiles')
+                ->where('user_id', $user->id)
+                ->listing()
+                ->paginate(config('tasks.pagination_length'))
+                ->appends(request()->query());
+
+            return response()->json(['tasks' => $tasks]);
+        } catch (\Throwable $e) {
             return response()->json([
-                'message' => 'Please check your inputs.',
-                'errors' => $validateSort->errors(),
-            ], 422);
+                'message' => $e->getMessage()
+            ], 500);
         }
-
-        $user = Auth()->user();
-        $tasks = Task::with('taskFiles')
-            ->where('user_id', $user->id)
-            ->listing()
-            ->paginate(config('tasks.pagination_length'))
-            ->appends(request()->query());
-
-        return response()->json(['tasks' => $tasks]);
     }
 
     /**
@@ -104,7 +121,7 @@ class TaskController extends Controller
                 return response()->json([
                     'message' => 'Please check your inputs.',
                     'errors' => $validateTask->errors(),
-                ], 401);
+                ], 422);
             }
 
             $validated = $validateTask->validated();
@@ -114,7 +131,7 @@ class TaskController extends Controller
                     if (!in_array($tag, TagType::getValues())) {
                         return response()->json([
                             'message' => 'Invalid tag found.',
-                        ], 401);
+                        ], 422);
                     }
                 }
             }
@@ -132,7 +149,7 @@ class TaskController extends Controller
 
             $task->update($validated);
 
-            return response()->json(['message' => 'Task updated.', 'task' => $task], 202);
+            return response()->json(['message' => 'Task updated.', 'task' => $task], 200);
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => $e->getMessage()
@@ -150,7 +167,7 @@ class TaskController extends Controller
             $task = Task::find($id);
 
             if ($task == null)
-                return response()->json(['message' => 'Task not found.'], 401);
+                return response()->json(['message' => 'Task not found.'], 404);
             else {
                 $taskFiles = TaskFile::where('task_id', $task->id)->get();
 
@@ -163,7 +180,7 @@ class TaskController extends Controller
             }
 
             DB::commit();
-            return response()->json(['message' => 'Task deleted']);
+            return response()->json(['message' => 'Task deleted'], 204);
         } catch (\Throwable $e) {
             DB::rollBack();
             return response()->json([
