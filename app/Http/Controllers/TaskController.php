@@ -14,8 +14,23 @@ class TaskController extends Controller
      */
     public function index()
     {
+        $validateSort = Validator::make(
+            request()->all(),
+            [
+                'sort_by' => 'required_with:sort_direction',
+                'sort_direction' => 'required_with:sort_by',
+            ]
+        );
+
+        if ($validateSort->fails()) {
+            return response()->json([
+                'message' => 'Please check your inputs.',
+                'errors' => $validateSort->errors(),
+            ], 422);
+        }
+
         $user = Auth()->user();
-        $tasks = Task::where('user_id', $user->id)->filter()->get();
+        $tasks = Task::where('user_id', $user->id)->listing()->get();
 
         return response()->json(['tasks' => $tasks]);
     }

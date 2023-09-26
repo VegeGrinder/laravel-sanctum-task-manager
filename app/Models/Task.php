@@ -39,8 +39,9 @@ class Task extends Model
         return $this->archived_date != null ? 1 : 0;
     }
 
-    public function scopeFilter(Builder $query): void
+    public function scopeListing(Builder $query): void
     {
+        // Filter
         $title = request('title', null);
         $description = request('description', null);
         $priorityLevel = request('priority_level', null);
@@ -50,6 +51,12 @@ class Task extends Model
         $completedDateTo = request('completed_date_to', null);
         $archivedDateFrom = request('archived_date_from', null);
         $archivedDateTo = request('archived_date_to', null);
+        $createdDateFrom = request('created_date_from', null);
+        $createdDateTo = request('created_date_to', null);
+
+        // Sort
+        $sortBy = request('sort_by', null);
+        $sortDirection = request('sort_direction', null);
 
         if (!empty($title))
             $query->where('title', 'LIKE', "%$title%");
@@ -77,5 +84,14 @@ class Task extends Model
 
         if (!empty($archivedDateTo))
             $query->where('archived_date', '<=', $archivedDateTo);
+
+        if (!empty($createdDateFrom))
+            $query->where('created_at', '>=', $createdDateFrom);
+
+        if (!empty($createdDateTo))
+            $query->where('created_at', '<=', $createdDateTo);
+
+        if (!empty($sortBy) && !empty($sortDirection))
+            $query->orderBy($sortBy, $sortDirection);
     }
 }

@@ -127,6 +127,21 @@
         <!-- body -->
         <template v-slot:body>
             <div class="mb-4">
+                <label class="block text-grey-darker text-sm font-bold mb-2" for="sortBy">
+                    Sort By
+                </label>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="col-span-1">
+                        <Multiselect v-model="filterSortBy" :options="filterSortByOptions" id="sortBy" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
+                        <span class="text-red-500" v-if="filterErrors.sort_by">{{ filterErrors.sort_by[0] }}</span>
+                    </div>
+                    <div class="col-span-1">
+                        <Multiselect v-model="filterSortDirection" :options="filterSortDirectionOptions" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
+                        <span class="text-red-500" v-if="filterErrors.sort_direction">{{ filterErrors.sort_direction[0] }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-4">
                 <label class="block text-grey-darker text-sm font-bold mb-2" for="title">
                     Title
                 </label>
@@ -176,18 +191,32 @@
                 <span class="text-red-500" v-if="filterErrors.due_date_to">{{ filterErrors.due_date_to[0] }}</span>
             </div>
             <div class="mb-4">
-                <label class="block text-grey-darker text-sm font-bold mb-2" for="dueDateFrom">
+                <label class="block text-grey-darker text-sm font-bold mb-2" for="archivedDateFrom">
                     Archived Date From
                 </label>
-                <input v-model="filterArchivedDateFrom" type="date" id="dueDateFrom" placeholder="Due Date From" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
-                <span class="text-red-500" v-if="filterErrors.due_date_from">{{ filterErrors.due_date_from[0] }}</span>
+                <input v-model="filterArchivedDateFrom" type="date" id="archivedDateFrom" placeholder="Archived Date From" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
+                <span class="text-red-500" v-if="filterErrors.archived_date_from">{{ filterErrors.archived_date_from[0] }}</span>
             </div>
             <div class="mb-4">
-                <label class="block text-grey-darker text-sm font-bold mb-2" for="dueDateTo">
+                <label class="block text-grey-darker text-sm font-bold mb-2" for="archivedDateTo">
                     Archived Date To
                 </label>
-                <input v-model="filterArchivedDateTo" type="date" id="dueDateTo" placeholder="Due Date To" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
-                <span class="text-red-500" v-if="filterErrors.due_date_to">{{ filterErrors.due_date_to[0] }}</span>
+                <input v-model="filterArchivedDateTo" type="date" id="archivedDateTo" placeholder="Archived Date To" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
+                <span class="text-red-500" v-if="filterErrors.archived_date_to">{{ filterErrors.archived_date_to[0] }}</span>
+            </div>
+            <div class="mb-4">
+                <label class="block text-grey-darker text-sm font-bold mb-2" for="createdDateFrom">
+                    Created Date From
+                </label>
+                <input v-model="filterCreatedDateFrom" type="date" id="createdDateFrom" placeholder="Created Date From" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
+                <span class="text-red-500" v-if="filterErrors.created_date_from">{{ filterErrors.created_date_from[0] }}</span>
+            </div>
+            <div class="mb-4">
+                <label class="block text-grey-darker text-sm font-bold mb-2" for="createdDateTo">
+                    Created Date To
+                </label>
+                <input v-model="filterCreatedDateTo" type="date" id="createdDateTo" placeholder="Created Date To" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
+                <span class="text-red-500" v-if="filterErrors.created_date_from">{{ filterErrors.created_date_to[0] }}</span>
             </div>
         </template>
 
@@ -259,6 +288,8 @@ export default {
 
         // Filter modal variables
         const isFilterModalVisible = ref(false)
+        const filterSortBy = ref('')
+        const filterSortDirection = ref('')
         const filterTitle = ref('')
         const filterDescription = ref('')
         const filterPriorityLevel = ref(null)
@@ -268,7 +299,49 @@ export default {
         const filterCompletedDateTo = ref('')
         const filterArchivedDateFrom = ref('')
         const filterArchivedDateTo = ref('')
+        const filterCreatedDateFrom = ref('')
+        const filterCreatedDateTo = ref('')
         const filterErrors = ref({})
+        const filterSortByOptions = reactive([
+            {
+                label: 'Title',
+                value: 'title'
+            },
+            {
+                label: 'Description',
+                value: 'description'
+            },
+            {
+                label: 'Due Date',
+                value: 'due_date'
+            },
+            {
+                label: 'Completed Date',
+                value: 'completed_date'
+            },
+            {
+                label: 'Archived Date',
+                value: 'archived_date'
+            },
+            {
+                label: 'Created Date',
+                value: 'created_date'
+            },
+            {
+                label: 'Priority Level',
+                value: 'priority_level'
+            },
+        ])
+        const filterSortDirectionOptions = reactive([
+            {
+                label: 'Ascending',
+                value: 'ASC'
+            },
+            {
+                label: 'Descending',
+                value: 'DESC'
+            }
+        ])
 
         let router = useRouter()
 
@@ -325,6 +398,7 @@ export default {
         const createTask = async () => {
             try {
                 isLoading.value = true
+                errors.value = {}
 
                 let data = {
                     title: title.value,
@@ -374,6 +448,7 @@ export default {
         const updateTask = async () => {
             try {
                 isLoading.value = true
+                errors.value = {}
 
                 let data = {
                     title: title.value,
@@ -504,9 +579,12 @@ export default {
         // Filter functions
         const loadTasksWithParams = async (val, index, field) => {
             isLoading.value = true
+            filterErrors.value = {}
 
             try {
                 let data = {
+                    sort_by: filterSortBy.value,
+                    sort_direction: filterSortDirection.value,
                     title: filterTitle.value,
                     description: filterDescription.value,
                     priority_level: filterPriorityLevel.value,
@@ -516,6 +594,8 @@ export default {
                     completed_date_to: filterCompletedDateTo.value,
                     archived_date_from: filterArchivedDateFrom.value,
                     archived_date_to: filterArchivedDateTo.value,
+                    created_date_from: filterCreatedDateFrom.value,
+                    created_date_to: filterCreatedDateTo.value,
                 }
 
                 const req = await request('get', '/api/tasks', { params: data })
@@ -538,6 +618,8 @@ export default {
         }
 
         const clearFilters = () => {
+            filterSortBy.value = ''
+            filterSortDirection.value = ''
             filterTitle.value = ''
             filterDescription.value = ''
             filterPriorityLevel.value = ''
@@ -547,6 +629,8 @@ export default {
             filterCompletedDateTo.value = ''
             filterArchivedDateFrom.value = ''
             filterArchivedDateTo.value = ''
+            filterCreatedDateFrom.value = ''
+            filterCreatedDateTo.value = ''
         }
 
         return {
@@ -578,6 +662,10 @@ export default {
 
             // Filter modal variables
             isFilterModalVisible,
+            filterSortByOptions,
+            filterSortDirectionOptions,
+            filterSortBy,
+            filterSortDirection,
             filterTitle,
             filterDescription,
             filterPriorityLevel,
@@ -587,6 +675,8 @@ export default {
             filterCompletedDateTo,
             filterArchivedDateFrom,
             filterArchivedDateTo,
+            filterCreatedDateFrom,
+            filterCreatedDateTo,
             filterErrors,
             // Filter modal functions
             loadTasksWithParams,
