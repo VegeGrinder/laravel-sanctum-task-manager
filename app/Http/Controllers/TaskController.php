@@ -30,7 +30,8 @@ class TaskController extends Controller
         }
 
         $user = Auth()->user();
-        $tasks = Task::where('user_id', $user->id)->listing()->get();
+        $tasks = Task::where('user_id', $user->id)->listing()->paginate(config('tasks.pagination_length'));
+        $tasks->appends(request()->query());
 
         return response()->json(['tasks' => $tasks]);
     }

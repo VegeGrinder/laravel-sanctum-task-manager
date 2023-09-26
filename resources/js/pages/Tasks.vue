@@ -33,7 +33,7 @@
                         </span>
                         <!-- <span class="pl-3">{{ val.file_attachments }} </span> -->
                     </div>
-                    <div class="grid grid-rows-3 grid-cols-1 gap-1">
+                    <div class="grid grid-rows-3 grid-cols-1 gap-1 min-w-max">
                         <button class="max-md:py-2 col-span-1 px-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-400" @click="toggleTaskField(val, idx, 'is_completed')" v-if="val.is_completed">To-do</button>
                         <button class="max-md:py-2 col-span-1 px-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-400" @click="toggleTaskField(val, idx, 'is_completed')" v-else>Complete</button>
 
@@ -47,6 +47,15 @@
             <div class="text-center" v-else>
                 No task found.
             </div>
+        </div>
+
+        <div class="text-center">
+            <TailwindPagination
+                :item-classes="['h-full', 'w-16']"
+                :active-classes="['bg-blue-100']"
+                :data="laravelData"
+                @pagination-change-page="loadTasksWithParams"
+            />
         </div>
     </div>
 
@@ -242,18 +251,21 @@ import Loader from '../components/Loader.vue'
 import Modal from '../components/Modal.vue'
 import Multiselect from '@vueform/multiselect'
 import { notify } from 'notiwind'
+import { TailwindPagination } from 'laravel-vue-pagination'
 
 export default {
     components: {
         Loader,
         Modal,
         Multiselect,
+        TailwindPagination,
     },
     setup() {
         const task = ref('')
         const tasks = ref([])
         const user = ref()
         const isLoading = ref()
+        const laravelData = ref({});
 
         // Task modal variables
         const isTaskModalVisible = ref(false)
@@ -369,12 +381,13 @@ export default {
         }
 
         // Task functions
-        const loadTasks = async () => {
+        const loadTasks = async (page = 1) => {
             isLoading.value = true
 
             try {
-                const req = await request('get', '/api/tasks')
-                tasks.value = req.data.tasks
+                const req = await request('get', '/api/tasks', { params: { page: page } })
+                tasks.value = req.data.tasks.data
+                laravelData.value = req.data.tasks
             } catch (e) {
                 if (e.response.data && e.response.data.message) {
                     notify({
@@ -577,12 +590,13 @@ export default {
         }
 
         // Filter functions
-        const loadTasksWithParams = async (val, index, field) => {
+        const loadTasksWithParams = async (page = 1) => {
             isLoading.value = true
             filterErrors.value = {}
 
             try {
                 let data = {
+                    page: page,
                     sort_by: filterSortBy.value,
                     sort_direction: filterSortDirection.value,
                     title: filterTitle.value,
@@ -599,7 +613,9 @@ export default {
                 }
 
                 const req = await request('get', '/api/tasks', { params: data })
-                tasks.value = req.data.tasks
+                tasks.value = req.data.tasks.data
+                laravelData.value = req.data.tasks
+                isFilterModalVisible.value = false
             } catch (e) {
                 if (e.response.data && e.response.data.errors) {
                     filterErrors.value = e.response.data.errors
@@ -641,6 +657,8 @@ export default {
             deleteTask,
             handleLogout,
             toggleTaskField,
+            laravelData,
+            loadTasks,
 
             // Task modal variables
             isTaskModalVisible,
