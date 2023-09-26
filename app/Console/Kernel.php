@@ -13,7 +13,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command(DeleteArchivedTaskCommand::class)->daily();
+        $schedule->command(DeleteArchivedTaskCommand::class)->daily()->withoutOverlapping();
     }
 
     /**

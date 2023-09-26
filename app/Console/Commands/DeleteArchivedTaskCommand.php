@@ -26,8 +26,8 @@ class DeleteArchivedTaskCommand extends Command
      */
     public function handle()
     {
-        $count = Task::where('is_archived', true)->where('created_at', '<=', now()->subDays(7))->count();
-        Task::where('is_archived', true)->where('created_at', '<=', now()->subDays(7))->delete();
+        $count = Task::where('archived_date', '<=', now()->subDays(7))->count();
+        Task::where('archived_date', '<=', now()->subDays(7))->delete();
 
         $this->info("Command finished, $count Task(s) deleted.");
     }
