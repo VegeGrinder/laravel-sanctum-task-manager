@@ -70,7 +70,7 @@
                 <label class="block text-grey-darker text-sm font-bold mb-2" for="description">
                     Description
                 </label>
-                <input v-model="description" type="text" id="description" placeholder="Description" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
+                <textarea v-model="description" id="description" placeholder="Description" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker"></textarea>
                 <span class="text-red-500" v-if="errors.description">{{ errors.description[0] }}</span>
             </div>
             <div class="mb-4">
