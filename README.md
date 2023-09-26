@@ -26,9 +26,9 @@ php artisan app:delete-archived-task-command
 ```
 To simulate this, you may set a Task with 'archived_date' 7 days before your current datetime directly in your database, then run the above command
 
-## Archived Task Deletion
+## API Documentation
 To view the API documentation made by a documentation tool (Scramble - https://scramble.dedoc.co)
 ```
 http://127.0.0.1:8000/docs/api (access Laravel Web URL with '/docs/api')
 ```
-Note: All '{id}' in the API endpoint are protected by EnsureTaskBelongsToUser middleware, which may not be shown in the auto-generated API documentation, returning Response Code 404 if the Task does not exist, or Response Code 401 if the Task does not belong to the User
+Note: All '{id}' in the API endpoints are protected by the EnsureTaskBelongsToUser middleware, which may not be shown in the auto-generated API documentation, returning Response Code 404 if the Task does not exist, or Response Code 401 if the Task does not belong to the User
