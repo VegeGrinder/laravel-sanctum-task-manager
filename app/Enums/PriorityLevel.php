@@ -6,15 +6,15 @@ use BenSampo\Enum\Enum;
 
 final class PriorityLevel extends Enum
 {
-    #[Description('Urgent')]
-    const URGENT = 0;
-
-    #[Description('High')]
-    const HIGH = 1;
+    #[Description('Low')]
+    const LOW = 0;
 
     #[Description('Normal')]
-    const NORMAL = 2;
+    const NORMAL = 1;
 
-    #[Description('Low')]
-    const LOW = 3;
+    #[Description('High')]
+    const HIGH = 2;
+
+    #[Description('Urgent')]
+    const URGENT = 3;
 }

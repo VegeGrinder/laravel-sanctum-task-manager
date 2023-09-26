@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Validator;
 class TaskController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of Tasks.
      */
     public function index(Request $request)
     {
@@ -23,16 +23,54 @@ class TaskController extends Controller
                 [
                     'title' => 'sometimes|string',
                     'description' => 'sometimes|string',
+                    /**
+                     * Urgent=3;High=2;Normal=1;Low=0;
+                     */
                     'priority_level' => 'sometimes|integer',
-                    'due_date_from' => 'sometimes|date',
-                    'due_date_to' => 'sometimes|date',
-                    'completed_date_from' => 'sometimes|date',
-                    'completed_date_to' => 'sometimes|date',
-                    'archived_date_from' => 'sometimes|date',
-                    'archived_date_to' => 'sometimes|date',
-                    'created_date_from' => 'sometimes|date',
-                    'created_date_to' => 'sometimes|date',
+                    /**
+                     * Date in YYYY-MM-DD format.
+                     * @example 2023-09-27
+                     */
+                    'due_date_from' => 'sometimes|date_format:Y-m-d',
+                    /**
+                     * Date in YYYY-MM-DD format.
+                     * @example 2023-09-27
+                     */
+                    'due_date_to' => 'sometimes|date_format:Y-m-d',
+                    /**
+                     * Date in YYYY-MM-DD format.
+                     * @example 2023-09-27
+                     */
+                    'completed_date_from' => 'sometimes|date_format:Y-m-d',
+                    /**
+                     * Date in YYYY-MM-DD format.
+                     * @example 2023-09-27
+                     */
+                    'completed_date_to' => 'sometimes|date_format:Y-m-d',
+                    /**
+                     * Date in YYYY-MM-DD format.
+                     * @example 2023-09-27
+                     */
+                    'archived_date_from' => 'sometimes|date_format:Y-m-d',
+                    /**
+                     * Date in YYYY-MM-DD format.
+                     * @example 2023-09-27
+                     */
+                    'archived_date_to' => 'sometimes|date_format:Y-m-d',
+                    /**
+                     * Date in YYYY-MM-DD format.
+                     * @example 2023-09-27
+                     */
+                    'created_date_from' => 'sometimes|date_format:Y-m-d',
+                    /**
+                     * Date in YYYY-MM-DD format.
+                     * @example 2023-09-27
+                     */
+                    'created_date_to' => 'sometimes|date_format:Y-m-d',
                     'sort_by' => 'sometimes|required_with:sort_direction|string',
+                    /**
+                     * Either 'ASC' or 'DESC'.
+                     */
                     'sort_direction' => 'sometimes|required_with:sort_by|string',
                 ]
             );
@@ -60,7 +98,7 @@ class TaskController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Create a new Task.
      */
     public function store(Request $request)
     {
@@ -70,8 +108,18 @@ class TaskController extends Controller
                 [
                     'title' => 'required',
                     'description' => 'required',
+                    /**
+                     * 'In-progress' or 'Blocked' or 'On-hold'.
+                     */
                     'tags' => 'sometimes|array',
+                    /**
+                     * Urgent=3;High=2;Normal=1;Low=0;
+                     */
                     'priority_level' => 'sometimes|integer',
+                    /**
+                     * Date in YYYY-MM-DD format.
+                     * @example 2023-09-27
+                     */
                     'due_date' => 'sometimes|date_format:Y-m-d|after_or_equal:' . now()->format('Y-m-d'),
                 ]
             );
@@ -99,7 +147,7 @@ class TaskController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified Task.
      */
     public function update(Request $request, string $id)
     {
@@ -109,8 +157,18 @@ class TaskController extends Controller
                 [
                     'title' => 'sometimes|required',
                     'description' => 'sometimes|required',
+                    /**
+                     * 'In-progress' or 'Blocked' or 'On-hold'.
+                     */
                     'tags' => 'sometimes|array',
+                    /**
+                     * Urgent=3;High=2;Normal=1;Low=0;
+                     */
                     'priority_level' => 'sometimes|integer',
+                    /**
+                     * Date in YYYY-MM-DD format.
+                     * @example 2023-09-27
+                     */
                     'due_date' => 'sometimes|date_format:Y-m-d|after_or_equal:' . now()->format('Y-m-d'),
                     'is_completed' => 'sometimes|boolean',
                     'is_archived' => 'sometimes|boolean',
@@ -162,7 +220,7 @@ class TaskController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified Task.
      */
     public function destroy(string $id)
     {
@@ -202,6 +260,9 @@ class TaskController extends Controller
             $validateFile = Validator::make(
                 $request->all(),
                 [
+                    /**
+                     * MIME types allowed: svg,png,jpb,mp4,csv,txt,doc,docx.
+                     */
                     'file' => 'required|file|mimes:mimes:svg,png,jpb,mp4,csv,txt,doc,docx',
                 ]
             );

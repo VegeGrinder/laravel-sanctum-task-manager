@@ -290,7 +290,11 @@ export default {
         const errors = ref({})
         const priorityLevelOptions = reactive([
             {
-                label: 'Urgent',
+                label: 'Low',
+                value: 0
+            },
+            {
+                label: 'Normal',
                 value: 1
             },
             {
@@ -298,12 +302,8 @@ export default {
                 value: 2
             },
             {
-                label: 'Normal',
+                label: 'Urgent',
                 value: 3
-            },
-            {
-                label: 'Low',
-                value: 4
             },
         ])
         const tagOptions = reactive(['In-progress', 'On-hold', 'Blocked'])
@@ -668,22 +668,49 @@ export default {
             filterErrors.value = {}
             currentPage.value = page
 
-            let data = {
-                page: page,
-                sort_by: filterSortBy.value,
-                sort_direction: filterSortDirection.value,
-                title: filterTitle.value,
-                description: filterDescription.value,
-                priority_level: filterPriorityLevel.value,
-                due_date_from: filterDueDateFrom.value,
-                due_date_to: filterDueDateTo.value,
-                completed_date_from: filterCompletedDateFrom.value,
-                completed_date_to: filterCompletedDateTo.value,
-                archived_date_from: filterArchivedDateFrom.value,
-                archived_date_to: filterArchivedDateTo.value,
-                created_date_from: filterCreatedDateFrom.value,
-                created_date_to: filterCreatedDateTo.value,
-            }
+            let data = { page: currentPage.value }
+
+            if (filterSortBy.value)
+                data.sort_by = filterSortBy.value
+
+            if (filterSortDirection.value)
+                data.sort_direction = filterSortDirection.value
+
+            if (filterTitle.value)
+                data.title = filterTitle.value
+
+            if (filterDescription.value)
+                data.description = filterDescription.value
+
+            if (filterPriorityLevel.value)
+                data.priority_level = filterPriorityLevel.value
+
+            if (filterDueDateFrom.value)
+                data.due_date_from = filterDueDateFrom.value
+
+            if (filterDueDateTo.value)
+                data.due_date_to = filterDueDateTo.value
+
+            if (filterCompletedDateFrom.value)
+                data.completed_date_from = filterCompletedDateFrom.value
+
+            if (filterCompletedDateTo.value)
+                data.completed_date_to = filterCompletedDateTo.value
+
+            if (filterArchivedDateFrom.value)
+                data.archived_date_from = filterArchivedDateFrom.value
+
+            if (filterArchivedDateTo.value)
+                data.archived_date_To = filterArchivedDateTo.value
+
+            if (filterCreatedDateFrom.value)
+                data.created_date_from = filterCreatedDateFrom.value
+
+            if (filterCreatedDateTo.value)
+                data.created_date_to = filterCreatedDateTo.value
+
+            if (filterPriorityLevel.value)
+                data.priority_level = parseInt(filterPriorityLevel.value)
 
             try {
                 const req = await request('get', '/api/tasks', { params: data })
