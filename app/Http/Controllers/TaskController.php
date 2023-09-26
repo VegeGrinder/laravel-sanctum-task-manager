@@ -107,6 +107,16 @@ class TaskController extends Controller
             }
 
             $task = Task::find($id);
+
+            if ($task == null)
+                return response()->json(['message' => 'Task not found'], 404);
+
+            if (isset($validated['is_completed']))
+                $validated['completed_date'] = now();
+
+            if (isset($validated['is_archived']))
+                $validated['archived_date'] = now();
+
             $task->update($validated);
 
             return response()->json(['message' => 'Task updated.', 'task' => $task], 202);

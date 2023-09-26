@@ -19,8 +19,8 @@ return new class extends Migration
             $table->string('description');
             $table->json('tags')->nullable();
             $table->unsignedTinyInteger('priority_level')->nullable();
-            $table->boolean('is_completed')->default(false);
-            $table->boolean('is_archived')->default(false);
+            $table->date('completed_date')->nullable();
+            $table->date('archived_date')->nullable();
             $table->date('due_date')->nullable();
             $table->timestamps();
 
