@@ -260,7 +260,8 @@ export default {
         const tasks = ref([])
         const user = ref()
         const isLoading = ref()
-        const laravelData = ref({});
+        const laravelData = ref({})
+        const currentPage = ref(1)
 
         // Task modal variables
         const isTaskModalVisible = ref(false)
@@ -404,24 +405,24 @@ export default {
         }
 
         const createTask = async () => {
+            isLoading.value = true
+            errors.value = {}
+
+            let data = {
+                title: title.value,
+                description: description.value,
+            }
+
+            if (dueDate.value)
+                data.due_date = dueDate.value
+
+            if (priorityLevel.value)
+                data.priority_level = parseInt(priorityLevel.value)
+
+            if (tagsLength.value)
+                data.tags = tags.value
+
             try {
-                isLoading.value = true
-                errors.value = {}
-
-                let data = {
-                    title: title.value,
-                    description: description.value,
-                }
-
-                if (dueDate.value)
-                    data.due_date = dueDate.value
-
-                if (priorityLevel.value)
-                    data.priority_level = parseInt(priorityLevel.value)
-
-                if (tagsLength)
-                    data.tags = tags.value
-
                 const req = await request('post', '/api/tasks', data)
 
                 if (req.data.message) {
@@ -454,24 +455,24 @@ export default {
         }
 
         const updateTask = async () => {
+            isLoading.value = true
+            errors.value = {}
+
+            let data = {
+                title: title.value,
+                description: description.value,
+            }
+
+            if (dueDate.value)
+                data.due_date = dueDate.value
+
+            if (priorityLevel.value)
+                data.priority_level = parseInt(priorityLevel.value)
+
+            if (tagsLength.value)
+                data.tags = tags.value
+
             try {
-                isLoading.value = true
-                errors.value = {}
-
-                let data = {
-                    title: title.value,
-                    description: description.value,
-                }
-
-                if (dueDate.value)
-                    data.due_date = dueDate.value
-
-                if (priorityLevel.value)
-                    data.priority_level = parseInt(priorityLevel.value)
-
-                if (tagsLength)
-                    data.tags = tags.value
-
                 const req = await request('put', `/api/tasks/${taskId.value}`, data)
 
                 if (req.data.message) {
@@ -485,7 +486,7 @@ export default {
                     }, 4000)
                 }
 
-                loadTasks()
+                loadTasksWithParams(currentPage.value)
             } catch (e) {
                 if (e.response.data && e.response.data.errors) {
                     errors.value = e.response.data.errors
@@ -552,12 +553,12 @@ export default {
         }
 
         const toggleTaskField = async (val, index, field) => {
+            isLoading.value = true
+
+            let data = {}
+            data[field] = !val[field]
+
             try {
-                isLoading.value = true
-
-                let data = {}
-                data[field] = !val[field]
-
                 const req = await request('put', `/api/tasks/${val.id}`, data)
 
                 if (req.data.message) {
@@ -568,7 +569,21 @@ export default {
                     }, 4000)
                 }
 
-                loadTasks()
+                loadTasksWithParams(currentPage.value)
+            } catch (e) {
+                if (e.response.data && e.response.data.errors) {
+                    errors.value = e.response.data.errors
+                }
+
+                if (e.response.data && e.response.data.message) {
+                    notify({
+                        group: "error",
+                        title: "Fail",
+                        text: e.response.data.message
+                    }, 4000)
+                }
+            }
+        }
             } catch (e) {
                 if (e.response.data && e.response.data.errors) {
                     errors.value = e.response.data.errors
@@ -588,25 +603,26 @@ export default {
         const loadTasksWithParams = async (page = 1) => {
             isLoading.value = true
             filterErrors.value = {}
+            currentPage.value = page
+
+            let data = {
+                page: page,
+                sort_by: filterSortBy.value,
+                sort_direction: filterSortDirection.value,
+                title: filterTitle.value,
+                description: filterDescription.value,
+                priority_level: filterPriorityLevel.value,
+                due_date_from: filterDueDateFrom.value,
+                due_date_to: filterDueDateTo.value,
+                completed_date_from: filterCompletedDateFrom.value,
+                completed_date_to: filterCompletedDateTo.value,
+                archived_date_from: filterArchivedDateFrom.value,
+                archived_date_to: filterArchivedDateTo.value,
+                created_date_from: filterCreatedDateFrom.value,
+                created_date_to: filterCreatedDateTo.value,
+            }
 
             try {
-                let data = {
-                    page: page,
-                    sort_by: filterSortBy.value,
-                    sort_direction: filterSortDirection.value,
-                    title: filterTitle.value,
-                    description: filterDescription.value,
-                    priority_level: filterPriorityLevel.value,
-                    due_date_from: filterDueDateFrom.value,
-                    due_date_to: filterDueDateTo.value,
-                    completed_date_from: filterCompletedDateFrom.value,
-                    completed_date_to: filterCompletedDateTo.value,
-                    archived_date_from: filterArchivedDateFrom.value,
-                    archived_date_to: filterArchivedDateTo.value,
-                    created_date_from: filterCreatedDateFrom.value,
-                    created_date_to: filterCreatedDateTo.value,
-                }
-
                 const req = await request('get', '/api/tasks', { params: data })
                 tasks.value = req.data.tasks.data
                 laravelData.value = req.data.tasks
