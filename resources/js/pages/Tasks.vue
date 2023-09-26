@@ -19,16 +19,16 @@
             <div class="flex flex-col gap-2" v-if="tasks.length">
                 <div class="max-md:flex-col flex gap-2 bg-blue-100 p-2 rounded-xl" v-for="(val, idx) in tasks" :key="val.id">
                     <div class="text-gray-600 grid grid-rows-3 grid-cols-2 grow p-2 cursor-pointer" @click="editTaskModal(val, idx)">
-                        <span class="p-1 col-span-2">Status: <b>{{ val.is_completed ? 'Complete' : 'To-do' }} {{ val.is_archived ? '(Archived)' : '' }}</b></span>
+                        <span class="p-1 col-span-2"><b>Status</b>: {{ val.is_completed ? 'Complete' : 'To-do' }} {{ val.is_archived ? '(Archived)' : '' }}</span>
 
-                        <span class="p-1 col-span-2">Title: {{ val.title }} </span>
-                        <span class="p-1 col-span-2">Description: {{ val.description }} </span>
+                        <span class="p-1 col-span-2"><b>Title</b>: {{ val.title }} </span>
+                        <span class="p-1 col-span-2"><b>Description</b>: {{ val.description }} </span>
 
-                        <span class="max-md:col-span-2 p-1" v-if="val.due_date != null">Due Date: {{ val.due_date }} ({{ val.days_left > 1 ? `${val.days_left} days` : `${val.days_left} day` }} left)</span>
-                        <span class="max-md:col-span-2 p-1" v-else>Due Date: None</span>
+                        <span class="max-md:col-span-2 p-1" v-if="val.due_date != null"><b>Due Date</b>: {{ val.due_date }} ({{ val.days_left > 1 ? `${val.days_left} days` : `${val.days_left} day` }} left)</span>
+                        <span class="max-md:col-span-2 p-1" v-else><b>Due Date</b>: None</span>
 
-                        <span class="max-md:col-span-2 p-1">Priority Level: {{ val.priority_level ? priorityLevelOptions[val.priority_level].label : 'None' }} </span>
-                        <span class="p-1 col-span-2">Tags:
+                        <span class="max-md:col-span-2 p-1"><b>Priority Level</b>: {{ val.priority_level ? priorityLevelOptions[val.priority_level].label : 'None' }} </span>
+                        <span class="p-1 col-span-2"><b>Tags</b>:
                             <span class="bg-blue-600 p-1 mr-1 rounded-md text-white" v-for="(tagVal, tagIdx) in val.tags" :key="tagIdx">{{ tagVal }}</span>
                         </span>
                         <!-- <span class="pl-3">{{ val.file_attachments }} </span> -->
