@@ -26,9 +26,14 @@ const router = createRouter({
     ],
 })
 router.beforeEach((to, from, next) => {
-    if (to.name !== 'login' && to.name !== 'register' && !isAuthenticated()) {
-        return next({ path: '/' })
+    if (!isAuthenticated() && to.name !== 'login' && to.name !== 'register') {
+        return next({ name: 'login' })
     }
+
+    if (isAuthenticated() && to.name !== 'home' && to.name !== 'tasks') {
+        return next({ name: 'home' })
+    }
+
     return next()
 })
 
