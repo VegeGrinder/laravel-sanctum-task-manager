@@ -13,8 +13,8 @@
         <Loader v-if="isLoading" />
         <div class="py-5" v-show="!isLoading">
             <div class="mb-3">
-                <button class="bg-blue-600 text-white px-5 py-2 rounded-md ml-2 hover:bg-blue-400" @click="addTaskModal">Create Task</button>
-                <button class="bg-blue-600 text-white px-5 py-2 rounded-md ml-2 hover:bg-blue-400" @click="isFilterModalVisible = true">Filter/Sort</button>
+                <button class="bg-blue-600 text-white px-5 py-2 rounded-md m-2 hover:bg-blue-400" @click="addTaskModal">Create Task</button>
+                <button class="bg-blue-600 text-white px-5 py-2 rounded-md m-2 hover:bg-blue-400" @click="isFilterModalVisible = true">Filter/Sort</button>
             </div>
             <div class="flex flex-col gap-2" v-if="tasks.length">
                 <div class="max-md:flex-col flex gap-2 bg-blue-100 p-2 rounded-xl" v-for="(val, idx) in tasks" :key="val.id">
@@ -31,16 +31,23 @@
                         <span class="p-1 col-span-2"><b>Tags</b>:
                             <span class="bg-blue-600 p-1 mr-1 rounded-md text-white" v-for="(tagVal, tagIdx) in val.tags" :key="tagIdx">{{ tagVal }}</span>
                         </span>
-                        <!-- <span class="pl-3">{{ val.file_attachments }} </span> -->
+                        <div class="col-span-2" v-if="val.task_files.length">
+                            <span class="p-1 col-span-2"><b>Files</b>:</span>
+                            <ol class="list-none">
+                                <li v-for="(taskFile, tfIdx) in val.task_files" :key="taskFile.id" class="border-2 border-blue-600 rounded flex cursor-pointer">
+                                    <div class="grow p-2" @click="downloadFile(taskFile.id, taskFile.filename)">{{ taskFile.filename }}</div>
+                                </li>
+                            </ol>
+                        </div>
                     </div>
-                    <div class="grid grid-rows-3 grid-cols-1 gap-1 min-w-max">
-                        <button class="max-md:py-2 col-span-1 px-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-400" @click="toggleTaskField(val, idx, 'is_completed')" v-if="val.is_completed">To-do</button>
-                        <button class="max-md:py-2 col-span-1 px-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-400" @click="toggleTaskField(val, idx, 'is_completed')" v-else>Complete</button>
+                    <div class="flex flex-col gap-1">
+                        <button class="max-md:py-2 max-md:w-full flex-auto col-span-1 px-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-400 w-16" @click="toggleTaskField(val, idx, 'is_completed')" v-if="val.is_completed">To-do</button>
+                        <button class="max-md:py-2 max-md:w-full flex-auto col-span-1 px-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-400 w-16" @click="toggleTaskField(val, idx, 'is_completed')" v-else>Complete</button>
 
-                        <button class="max-md:py-2 col-span-1 px-1 bg-yellow-600 text-white text-sm rounded-md hover:bg-yellow-400" @click="toggleTaskField(val, idx, 'is_archived')" v-if="val.is_archived">Restore</button>
-                        <button class="max-md:py-2 col-span-1 px-1 bg-yellow-600 text-white text-sm rounded-md hover:bg-yellow-400" @click="toggleTaskField(val, idx, 'is_archived')" v-else>Archive</button>
+                        <button class="max-md:py-2 max-md:w-full flex-auto col-span-1 px-1 bg-yellow-600 text-white text-sm rounded-md hover:bg-yellow-400 w-16" @click="toggleTaskField(val, idx, 'is_archived')" v-if="val.is_archived">Restore</button>
+                        <button class="max-md:py-2 max-md:w-full flex-auto col-span-1 px-1 bg-yellow-600 text-white text-sm rounded-md hover:bg-yellow-400 w-16" @click="toggleTaskField(val, idx, 'is_archived')" v-else>Archive</button>
 
-                        <button class="max-md:py-2 col-span-1 px-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-400" @click="deleteTask(val, idx)">Delete</button>
+                        <button class="max-md:py-2 max-md:w-full flex-auto col-span-1 px-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-400 w-16" @click="deleteTask(val, idx)">Delete</button>
                     </div>
                 </div>
             </div>
@@ -98,12 +105,18 @@
                 <Multiselect v-model="tags" :options="tagOptions" mode="tags" :close-on-select="false" id="tags" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
                 <span class="text-red-500" v-if="errors.tags">{{ errors.tags[0] }}</span>
             </div>
-            <div>
-                <label class="block text-grey-darker text-sm font-bold mb-2" for="fileAttachments">
+            <div v-if="taskId > 0">
+                <label class="block text-grey-darker text-sm font-bold mb-2">
                     File Attachments
                 </label>
-                <input type="file" name="fileAttachments" id="fileAttachments" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" />
-                <span class="text-red-500" v-if="errors.file_attachments">{{ errors.file_attachments[0] }}</span>
+                <ol class="list-none">
+                    <li v-for="(fileAttachment, faIdx) in fileAttachments" :key="fileAttachment.id" class="border-2 border-blue-600 rounded flex cursor-pointer">
+                        <div class="grow p-2" @click="downloadFile(fileAttachment.id, fileAttachment.filename)">{{ fileAttachment.filename }}</div>
+                        <div class="p-2 bg-red-600 text-white" @click="deleteFile(fileAttachment.id, faIdx)">Delete</div>
+                    </li>
+                </ol>
+                <input type="file" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" @change="uploadFile($event.target.files)" />
+                <span class="text-red-500" v-if="errors.file">{{ errors.file[0] }}</span>
             </div>
         </template>
 
@@ -247,6 +260,7 @@ import Modal from '../components/Modal.vue'
 import Multiselect from '@vueform/multiselect'
 import { notify } from 'notiwind'
 import { TailwindPagination } from 'laravel-vue-pagination'
+import fileDownload from 'js-file-download'
 
 export default {
     components: {
@@ -272,7 +286,7 @@ export default {
         const dueDate = ref('')
         const priorityLevel = ref(null)
         const tags = ref([])
-        const fileAttachments = reactive([])
+        const fileAttachments = ref([]);
         const errors = ref({})
         const priorityLevelOptions = reactive([
             {
@@ -358,7 +372,7 @@ export default {
             loadTasks()
         });
 
-        const tagsLength = computed(() => Object.keys(tags.value).length)
+        const tagsLength = computed(() => Object.keys(tags.value ?? []).length)
 
         const authentication = async () => {
             isLoading.value = true
@@ -549,7 +563,7 @@ export default {
             dueDate.value = val.due_date
             priorityLevel.value = val.priority_level
             tags.value = val.tags
-            // fileAttachments.value = reactive([])
+            fileAttachments.value = val.task_files
         }
 
         const toggleTaskField = async (val, index, field) => {
@@ -584,11 +598,60 @@ export default {
                 }
             }
         }
+
+        const uploadFile = async (files) => {
+            let formData = new FormData();
+
+            formData.append('file', files[0]);
+
+            try {
+                const req = await request('post', `/api/tasks/${taskId.value}/file-upload`, formData)
+
+                if (req.data.taskFile)
+                    fileAttachments.value.push(req.data.taskFile)
+
+                if (req.data.message) {
+                    notify({
+                        group: "generic",
+                        title: "Success",
+                        text: req.data.message
+                    }, 4000)
+                }
             } catch (e) {
                 if (e.response.data && e.response.data.errors) {
                     errors.value = e.response.data.errors
                 }
 
+                if (e.response.data && e.response.data.message) {
+                    notify({
+                        group: "error",
+                        title: "Fail",
+                        text: e.response.data.message
+                    }, 4000)
+                }
+            }
+        }
+
+        const downloadFile = async (imageId, filename) => {
+            try {
+                const req = await request('get', `/api/tasks/${taskId.value}/images/${imageId}`, { responseType: 'blob' })
+                fileDownload(req.data, filename);
+            } catch (e) {
+                if (e.response.data && e.response.data.message) {
+                    notify({
+                        group: "error",
+                        title: "Fail",
+                        text: e.response.data.message
+                    }, 4000)
+                }
+            }
+        }
+
+        const deleteFile = async (imageId, index) => {
+            try {
+                const req = await request('delete', `/api/tasks/${taskId.value}/images/${imageId}`)
+                fileAttachments.value.splice(index, 1)
+            } catch (e) {
                 if (e.response.data && e.response.data.message) {
                     notify({
                         group: "error",
@@ -670,6 +733,8 @@ export default {
             toggleTaskField,
             laravelData,
             loadTasks,
+            downloadFile,
+            deleteFile,
 
             // Task modal variables
             isTaskModalVisible,
@@ -688,6 +753,7 @@ export default {
             addTaskModal,
             editTaskModal,
             processTask,
+            uploadFile,
 
             // Filter modal variables
             isFilterModalVisible,

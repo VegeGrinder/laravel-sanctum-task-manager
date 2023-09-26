@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Task extends Model
 {
@@ -37,6 +38,11 @@ class Task extends Model
     public function getIsArchivedAttribute(): bool
     {
         return $this->archived_date != null ? 1 : 0;
+    }
+
+    public function taskFiles(): HasMany
+    {
+        return $this->hasMany(TaskFile::class);
     }
 
     public function scopeListing(Builder $query): void

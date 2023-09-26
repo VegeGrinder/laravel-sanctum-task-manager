@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\TagType;
 use App\Models\Task;
+use App\Models\TaskFile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class TaskController extends Controller
@@ -30,8 +33,11 @@ class TaskController extends Controller
         }
 
         $user = Auth()->user();
-        $tasks = Task::where('user_id', $user->id)->listing()->paginate(config('tasks.pagination_length'));
-        $tasks->appends(request()->query());
+        $tasks = Task::with('taskFiles')
+            ->where('user_id', $user->id)
+            ->listing()
+            ->paginate(config('tasks.pagination_length'))
+            ->appends(request()->query());
 
         return response()->json(['tasks' => $tasks]);
     }
@@ -73,16 +79,6 @@ class TaskController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $task = Task::findOrFail($id);
-
-        return response()->json($task, 200);
     }
 
     /**
@@ -150,18 +146,98 @@ class TaskController extends Controller
     public function destroy(string $id)
     {
         try {
+            DB::beginTransaction();
             $task = Task::find($id);
 
             if ($task == null)
                 return response()->json(['message' => 'Task not found.'], 401);
-            else
-                $task->delete();
+            else {
+                $taskFiles = TaskFile::where('task_id', $task->id)->get();
 
+                foreach ($taskFiles as $taskFile) {
+                    Storage::delete($taskFile->path);
+                    $taskFile->delete();
+                }
+
+                $task->delete();
+            }
+
+            DB::commit();
             return response()->json(['message' => 'Task deleted']);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload a file to the server
+     */
+    public function uploadFile(Request $request, string $id)
+    {
+        try {
+            $validateFile = Validator::make(
+                $request->all(),
+                [
+                    'file' => 'required|file|mimes:mimes:svg,png,jpb,mp4,csv,txt,doc,docx',
+                ]
+            );
+
+            if ($validateFile->fails()) {
+                return response()->json([
+                    'message' => 'File upload failed.',
+                    'errors' => $validateFile->errors(),
+                ], 401);
+            }
+
+            $filename = $request->file('file')->getClientOriginalName();
+
+            $taskFile = TaskFile::create([
+                'task_id' => $id,
+                'path' => $request->file('file')->storeAs('uploads/' . Auth()->user()->id . "/tasks/$id/files", $filename),
+                'filename' => $filename,
+            ]);
+
+            return response()->json(['message' => 'File upload completed.', 'taskFile' => $taskFile]);
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Download a file from the server
+     */
+    public function downloadFile(string $id, string $imageId)
+    {
+        // Already checked Task $id owned by User through EnsureTaskBelongsToUser middleware
+        $taskFile = TaskFile::find($imageId);
+        $directory = "app/$taskFile->path";
+
+        if ($taskFile == null || Storage::exists($directory))
+            return response()->json(['message' => 'File not found.'], 404);
+
+        return response()->download(storage_path($directory), $taskFile->filename);
+    }
+
+    /**
+     * Delete a file from the server
+     */
+    public function deleteFile(string $id, string $imageId)
+    {
+        // Already checked Task $id owned by User through EnsureTaskBelongsToUser middleware
+        $taskFile = TaskFile::find($imageId);
+        $directory = "app/$taskFile->path";
+
+        if ($taskFile == null || Storage::exists($directory))
+            return response()->json(['message' => 'File not found.'], 404);
+
+        Storage::delete($taskFile->path);
+        $taskFile->delete();
+
+        return response()->json(['message' => 'File deleted.']);
     }
 }
