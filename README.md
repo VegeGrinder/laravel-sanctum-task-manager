@@ -1,4 +1,5 @@
-# 09202023-goh-shein-web
+# Task Manager (Take-home Test)
+This is a Laravel Vue.js SPA with Laravel Sanctum authentication. Users can create, edit and delete Tasks filtered/sorted through various parameters. All Tasks can be marked as Completed, or Archived which will be deleted after 1 week. Other than that, users may upload files to each Task, and the UI will show all relevant details about each Task.
 
 ## Environment
 npm (9.7.2)  
