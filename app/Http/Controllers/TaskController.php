@@ -242,7 +242,7 @@ class TaskController extends Controller
             }
 
             DB::commit();
-            return response()->json(['message' => 'Task deleted'], 204);
+            return response()->noContent();
         } catch (\Throwable $e) {
             DB::rollBack();
             return response()->json([

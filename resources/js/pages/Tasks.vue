@@ -125,7 +125,7 @@
             <button type="button" class="rounded-md bg-blue-600 hover:bg-blue-400 p-2 text-white" @click="processTask">
                 Save
             </button>
-            <button type="button" class="rounded-md bg-red-600 hover:bg-red-400 p-2 text-white" @click="deleteTask(val, idx)" v-if="taskId > 0">
+            <button type="button" class="rounded-md bg-red-600 hover:bg-red-400 p-2 text-white" @click="deleteTask(task, taskIndex)" v-if="taskId > 0">
                 Delete
             </button>
             <button type="button" class="rounded-md bg-slate-600 hover:bg-slate-400 p-2 text-white" @click="isTaskModalVisible = false">
@@ -281,6 +281,7 @@ export default {
         const isTaskModalVisible = ref(false)
         const modalTitle = ref('Create Task')
         const taskId = ref(0)  // Required
+        const taskIndex = ref(null)
         const title = ref('')  // Required
         const description = ref('')  // Required
         const dueDate = ref('')
@@ -523,10 +524,15 @@ export default {
                 try {
                     const req = await request('delete', `/api/tasks/${val.id}`)
 
-                    if (req.data.message) {
-                        isLoading.value = false
-                        tasks.value.splice(index, 1)
-                    }
+                    isLoading.value = false
+                    isTaskModalVisible.value = false
+                    tasks.value.splice(index, 1)
+
+                    notify({
+                        group: "generic",
+                        title: "Success",
+                        text: "Task deleted successfully."
+                    }, 4000)
                 } catch (e) {
                     if (e.response.data && e.response.data.message) {
                         notify({
@@ -545,7 +551,9 @@ export default {
             modalTitle.value = 'Create Task'
             isTaskModalVisible.value = true
 
+            task.value = null;
             taskId.value = 0
+            taskIndex.value = null
             title.value = ''
             description.value = ''
             dueDate.value = ''
@@ -558,7 +566,9 @@ export default {
             modalTitle.value = 'Edit Task'
             isTaskModalVisible.value = true
 
+            task.value = val;
             taskId.value = val.id
+            taskIndex.value = idx
             title.value = val.title
             description.value = val.description
             dueDate.value = val.due_date
@@ -768,6 +778,7 @@ export default {
             isTaskModalVisible,
             modalTitle,
             taskId,
+            taskIndex,
             title,
             description,
             dueDate,
