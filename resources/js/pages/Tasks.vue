@@ -31,7 +31,7 @@
                         <span class="p-1 col-span-2"><b>Tags</b>:
                             <span class="bg-blue-600 p-1 mr-1 rounded-md text-white" v-for="(tagVal, tagIdx) in val.tags" :key="tagIdx">{{ tagVal }}</span>
                         </span>
-                        <div class="col-span-2" v-if="val.task_files.length">
+                        <div class="col-span-2" v-if="val.task_files?.length">
                             <span class="p-1 col-span-2"><b>Files</b>:</span>
                             <ol class="list-none">
                                 <li v-for="(taskFile, tfIdx) in val.task_files" :key="taskFile.id" class="border-2 border-blue-600 rounded flex cursor-pointer">
@@ -551,6 +551,7 @@ export default {
             dueDate.value = ''
             priorityLevel.value = ''
             tags.value = []
+            fileAttachments.value = []
         }
 
         const editTaskModal = (val, idx) => {
@@ -563,7 +564,7 @@ export default {
             dueDate.value = val.due_date
             priorityLevel.value = val.priority_level
             tags.value = val.tags
-            fileAttachments.value = val.task_files
+            fileAttachments.value = val.task_files ?? []
         }
 
         const toggleTaskField = async (val, index, field) => {
